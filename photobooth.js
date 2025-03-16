@@ -77,20 +77,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Camera functions
+  let isFrontCamera = true; // Track camera state
+
   async function startCamera() {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' } 
-      });
-      
-      video.srcObject = stream;
-      updateCaptureButton();
-    } catch (err) {
-      console.error('Error accessing camera:', err);
-      alert('Unable to access your camera. Please check permissions and try again.');
-    }
+      try {
+          const constraints = {
+              video: { facingMode: isFrontCamera ? 'user' : 'environment' }
+          };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+  
+          video.srcObject = stream;
+          video.style.transform = isFrontCamera ? 'scaleX(-1)' : 'none'; // Mirror front camera
+          updateCaptureButton();
+      } catch (err) {
+          console.error('Error accessing camera:', err);
+          alert('Unable to access your camera. Please check permissions and try again.');
+      }
   }
+  
+  // Add a button to switch cameras
+  document.addEventListener('DOMContentLoaded', () => {
+      const switchCameraBtn = document.createElement('button');
+      switchCameraBtn.textContent = 'Switch Camera';
+      switchCameraBtn.classList.add('btn', 'btn-outline');
+      document.querySelector('.controls').prepend(switchCameraBtn);
+  
+      switchCameraBtn.addEventListener('click', () => {
+          isFrontCamera = !isFrontCamera;
+          stopCamera();
+          startCamera();
+      });
+  });
+  
   
   function stopCamera() {
     if (stream) {
